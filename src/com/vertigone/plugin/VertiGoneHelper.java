@@ -177,12 +177,13 @@ public class VertiGoneHelper extends BluetoothHelper {
 	
 	private void updateValues(String s) {
 		String[] tokens = s.split(",");
-		if (tokens.length != 3) {
+		if (tokens.length != 4) {
 			Status.updateBLEStatus(Status.BleStatus.DataError);
 			return;
 		}
 		try {
-			// Then this is accelerometer data
+			/*
+			 * // Then this is accelerometer data
 			if (s.startsWith("A")) {
 				SensorValues.acceleration_x = Float.parseFloat(tokens[0].substring(1));
 				SensorValues.acceleration_y = Float.parseFloat(tokens[1]);
@@ -198,7 +199,11 @@ public class VertiGoneHelper extends BluetoothHelper {
 				SensorValues.gyro_x = Float.parseFloat(tokens[0]);
 				SensorValues.gyro_y = Float.parseFloat(tokens[1]);
 				SensorValues.gyro_z = Float.parseFloat(tokens[2]);
-			}
+			} */
+			SensorValues.quat_w = Float.parseFloat(tokens[0]);
+			SensorValues.quat_x = Float.parseFloat(tokens[1]);
+			SensorValues.quat_y = Float.parseFloat(tokens[2]);
+			SensorValues.quat_z = Float.parseFloat(tokens[3]);
 			Status.updateBLEStatus(Status.BleStatus.DataRetreival);
 		} catch(Exception e) {
 			Status.updateBLEStatus(Status.BleStatus.DataError);
