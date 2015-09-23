@@ -175,13 +175,12 @@ public class BluetoothHelper {
     public void getFeed() {
     	mParent.runOnUiThread(new Runnable() {
     		public void run() {
-            	BluetoothGattService service = mBluetoothGatt.getService(BleDefinedUUIDs.Service.VGONE);
+            	BluetoothGattService service = mBluetoothGatt.getService(BleDefinedUUIDs.Service.SYMBALANCE);
             	debug(service.getUuid().toString());
-            	BluetoothGattCharacteristic ch = service.getCharacteristic(BleDefinedUUIDs.Characteristic.VGONE_READ);
+            	BluetoothGattCharacteristic ch = service.getCharacteristic(BleDefinedUUIDs.Characteristic.SYMBALANCE_READ);
             	debug(ch.getUuid().toString());
-            	debug("RequestingCharacteristicValue");
+            	Log.d("BleStatus", "RequestingCharacteristicValue");
                 mBluetoothGatt.readCharacteristic(ch);
-                debug(ch.getStringValue(0));
     		}
     	});
     }

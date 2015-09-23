@@ -4,6 +4,7 @@ package com.vertigone.plugin;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import android.os.Bundle;
@@ -35,9 +36,9 @@ public class VertiGoneHelper extends BluetoothHelper {
 		debug("VertiGoneHelper Created");
 		// TODO Auto-generated constructor stub
 	}
-	final static String DEVICENAME = "Adafruit Bluefruit LE";
+	final static String DEVICENAME = "SYMBIO";
 	final static private UUID mVertiGoneServiceUuid = BleDefinedUUIDs.Service.SYMBALANCE;
-	final static private UUID mVertiGoneCharacteristicUuid = BleDefinedUUIDs.Characteristic.VGONE_READ;
+	final static private UUID mVertiGoneCharacteristicUuid = BleDefinedUUIDs.Characteristic.SYMBALANCE_READ;
 	private BluetoothGattCharacteristic mBTValueCharacteristic = null;
 	private EditText mConsole = null;
 	private TextView mTextView  = null;
@@ -45,7 +46,7 @@ public class VertiGoneHelper extends BluetoothHelper {
 	public boolean scanning = false;
 	public boolean device_found = false;
 	public boolean device_connected = false;
-	
+	private StringBuffer inBuffer = new StringBuffer(40);
 	public boolean initialize() {
 		Log.d("UnityPlugin", "Helper Initializing");
 		Status.updateBLEStatus(Status.BleStatus.Start);
@@ -112,9 +113,14 @@ public class VertiGoneHelper extends BluetoothHelper {
 	}
 	
 	private void getVertiGoneService() {
-		debug("Getting VertiGone Service");
+		Status.updateBLEStatus("Getting Symbalance Service");
+		Status.updateBLEStatus("Getting list of available services:");
+		List<BluetoothGattService> services = mBluetoothGatt.getServices();
+		for (BluetoothGattService service : services) {
+			Status.updateBLEStatus(service.toString());
+			Status.updateBLEStatus(service.getUuid().toString());
+		}
 		mBluetoothService = mBluetoothGatt.getService(mVertiGoneServiceUuid);
-		
 		if(mBluetoothService == null) {
 			Status.updateBLEStatus(Status.BleStatus.ServiceFailed);
 		}
@@ -123,16 +129,22 @@ public class VertiGoneHelper extends BluetoothHelper {
 			getVertiGoneCharacteristic();
 		}
 	}
-	
+	/// Somewhere around here is the problem!!!
 	private void getVertiGoneCharacteristic() {
-		debug("Getting VertiGone Measurement characteristic");
+		Status.updateBLEStatus("Getting list of characteristics");
+		List<BluetoothGattCharacteristic> characteristics= mBluetoothService.getCharacteristics();
+		for (BluetoothGattCharacteristic ch : characteristics) {
+			Status.updateBLEStatus(ch.toString());
+			Status.updateBLEStatus(ch.getUuid().toString());
+		}
+		Status.updateBLEStatus("Getting Symbalance Characteristic");
 		mBTValueCharacteristic = mBluetoothService.getCharacteristic(mVertiGoneCharacteristicUuid);
-		
 		if(mBTValueCharacteristic == null) {
 			Status.updateBLEStatus(Status.BleStatus.ValuesFailed);
 		}
 		else {
 			Status.updateBLEStatus(Status.BleStatus.ValuesRetreived);
+			Status.updateBLEStatus("Characteristic found, enabling notifications");
 			enableNotificationForVertiGone();
 		}
 	}
@@ -152,7 +164,7 @@ public class VertiGoneHelper extends BluetoothHelper {
 	        Status.updateBLEStatus(Status.BleStatus.Activated);
         }		
         else {
-        	debug("Could not get descriptor for characteristic! Notification are not enabled.");
+        	Status.updateBLEStatus(Status.BleStatus.Deactivated);
         }
 	}
 
@@ -176,37 +188,26 @@ public class VertiGoneHelper extends BluetoothHelper {
 	}
 	
 	private void updateValues(String s) {
-		String[] tokens = s.split(",");
-		if (tokens.length != 4) {
-			Status.updateBLEStatus(Status.BleStatus.DataError);
-			return;
-		}
+		//inBuffer.append(s);
 		try {
+			String[] tokens = s.split(",");
+			SensorValues.x = Float.parseFloat(tokens[0]);
+			SensorValues.y = Float.parseFloat(tokens[1]);
+			SensorValues.z = Float.parseFloat(tokens[2]);
 			/*
-			 * // Then this is accelerometer data
-			if (s.startsWith("A")) {
-				SensorValues.acceleration_x = Float.parseFloat(tokens[0].substring(1));
-				SensorValues.acceleration_y = Float.parseFloat(tokens[1]);
-				SensorValues.acceleration_z = Float.parseFloat(tokens[2]);
-			}
-			else if (s.startsWith("M")) {
-				SensorValues.mag_x = Float.parseFloat(tokens[0].substring(1));
-				SensorValues.mag_y = Float.parseFloat(tokens[1]);
-				SensorValues.mag_z = Float.parseFloat(tokens[2]);
-			}
-			// Else assume this is gyroscope data
-			else {
-				SensorValues.gyro_x = Float.parseFloat(tokens[0]);
-				SensorValues.gyro_y = Float.parseFloat(tokens[1]);
-				SensorValues.gyro_z = Float.parseFloat(tokens[2]);
+			String[] tokens = inBuffer.toString().split(":");
+			if (tokens.length >= 3) {
+				String values = tokens[tokens.length-2];
+				Status.updateBLEStatus(values);
+				Status.updateBLEStatus("OK");
+				inBuffer = new StringBuffer(tokens[tokens.length - 1]);
+				String[] quat = values.split(",");
+				SensorValues.x = Float.parseFloat(quat[0]);
+				SensorValues.y = Float.parseFloat(quat[1]);
+				SensorValues.z = Float.parseFloat(quat[2]);
 			} */
-			SensorValues.quat_w = Float.parseFloat(tokens[0]);
-			SensorValues.quat_x = Float.parseFloat(tokens[1]);
-			SensorValues.quat_y = Float.parseFloat(tokens[2]);
-			SensorValues.quat_z = Float.parseFloat(tokens[3]);
-			Status.updateBLEStatus(Status.BleStatus.DataRetreival);
 		} catch(Exception e) {
-			Status.updateBLEStatus(Status.BleStatus.DataError);
+			Status.updateBLEStatus(s);
 		}
 	}
 	
@@ -254,7 +255,7 @@ public class VertiGoneHelper extends BluetoothHelper {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
         	if(status == BluetoothGatt.GATT_SUCCESS) {
-        		Status.updateBLEStatus(Status.BleStatus.ServiceRetreived);
+        		Status.updateBLEStatus("Service Discovered");
         		getVertiGoneService();
         	}
         	else {
@@ -266,8 +267,6 @@ public class VertiGoneHelper extends BluetoothHelper {
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic)
         {
-        	Status.updateBLEStatus("Characteristic Changed");
-        	Status.updateBLEStatus(characteristic.toString());
         	if(characteristic.equals(mBTValueCharacteristic)) {
         		getAndDisplayVertiGoneValue();
         	}

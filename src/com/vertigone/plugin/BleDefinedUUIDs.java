@@ -6,8 +6,7 @@ import java.util.UUID;
 public class BleDefinedUUIDs {
 	
 	public static class Service {
-		final static public UUID VGONE               = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-		final static public UUID SYMBALANCE          = UUID.fromString("ee0c2080-8786-40ba-ab96-99b91ac981d8");
+		final static public UUID SYMBALANCE          = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
 	};
 	
 	public static class Characteristic {
@@ -18,8 +17,8 @@ public class BleDefinedUUIDs {
 		final static public UUID APPEARANCE               = UUID.fromString("00002a01-0000-1000-8000-00805f9b34fb");
 		final static public UUID BODY_SENSOR_LOCATION     = UUID.fromString("00002a38-0000-1000-8000-00805f9b34fb");
 		final static public UUID BATTERY_LEVEL            = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
-		final static public UUID VGONE_WRITE              = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
-		final static public UUID VGONE_READ               = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+		final static public UUID SYMBALANCE_WRITE              = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+		final static public UUID SYMBALANCE_READ               = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
 	}
 	
 	public static class Descriptor {
